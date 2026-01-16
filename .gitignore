@@ -3,3 +3,12 @@ Phase-0.txt
 
 #envs
 F/
+
+#pycache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+#events
+data/events.db
