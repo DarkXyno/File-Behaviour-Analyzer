@@ -16,5 +16,14 @@ def init_db():
     );
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS normalized_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            action TEXT,
+            path TEXT
+        );
+    """)
+
     conn.commit()
     conn.close()

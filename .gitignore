@@ -12,3 +12,6 @@ __pycache__/
 
 #events
 data/events.db
+
+#src
+src/monitor/__pycache__

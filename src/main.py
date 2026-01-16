@@ -14,12 +14,15 @@ def main():
 
     init_db()
 
-    if args.analyze:
+    # Observer
+    if args.path:
         start_observer(args.path, args.duration)
     
+    # Analyzer
     if args.analyze:
         analyze.run()
     
+    # No-op guard
     if not args.path and not args.analyze:
         print("Error: Specify --path to observe and/or --analuze to analyze.")
 
@@ -27,11 +30,11 @@ if __name__ == "__main__":
     main()
 
 #temp   
-    print("\nTop files:")
-    for path, count in top_files():
-        print(count, path)
+    # print("\nTop files:")
+    # for path, count in top_files():
+    #     print(count, path)
 
-    print("\nTop processes:")
-    for proc, count in top_processes():
-        print(count, proc)
+    # print("\nTop processes:")
+    # for proc, count in top_processes():
+    #     print(count, proc)
 
