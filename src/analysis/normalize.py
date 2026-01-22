@@ -1,14 +1,13 @@
 import sqlite3
 from pathlib import Path
 from collections import defaultdict
-from datetime import datetime, timedelta
-
-DB_PATH = Path("data/events.db")
+from datetime import datetime, timedelta, timezone
+from storage.db import get_db_path
 
 WINDOW_SECONDS = 3  # how long events are grouped
 
 def normalize_events():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     # Fetch raw events ordered by time
@@ -26,8 +25,9 @@ def normalize_events():
     groups = defaultdict(list)
 
     for ts, event_type, path in rows:
-        ts_dt = datetime.fromisoformat(ts)
-        groups[path].append((ts_dt, event_type))
+        ts_dt = datetime.fromisoformat(ts).replace(tzinfo=timezone.utc)
+        clean_path = path.split("->")[0].strip()
+        groups[clean_path].append((ts_dt, event_type))
 
     normalized = []
 
@@ -50,7 +50,12 @@ def normalize_events():
         else:
             action = "file_touched"
 
-        normalized.append((last_ts, action, path))
+        if action == "file_renamed":
+            stored_path = path
+        else:
+            stored_path = clean_path
+
+        normalized.append((last_ts, action, stored_path))
 
     # Insert normalized events
     cursor.executemany("""

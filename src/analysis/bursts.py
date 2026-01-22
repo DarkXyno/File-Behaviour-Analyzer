@@ -1,17 +1,16 @@
 import sqlite3
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
-
-DB_PATH = Path("data/events.db")
+from storage.db import get_db_path
 
 WINDOW_SECONDS = 10
 MIN_EVENTS = 5
 BASELINE_MULTIPLIER = 3
 
 def detect_bursts():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -29,8 +28,13 @@ def detect_bursts():
     for ts, action, path in rows:
         clean_path = path.split("->")[-1].strip()
         folder = str(Path(clean_path).parent) if clean_path else "UNKNOWN"
+
+        dt = datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
         events.append({
-            "time": datetime.fromisoformat(ts),
+            "time": dt,
             "action": action,
             "folder": folder
         })
@@ -70,6 +74,15 @@ def detect_bursts():
                 count >= MIN_EVENTS
                 and window_rate >= baseline_rate * BASELINE_MULTIPLIER
             ):
+                severity_ratio = window_rate / baseline_rate
+
+                if severity_ratio < 3:
+                    severity = "low"
+                elif severity_ratio < 6:
+                    severity = "medium"
+                else:
+                    severity = "high"
+
                 bursts.append({
                     "folder": folder,
                     "type": action,
@@ -77,6 +90,9 @@ def detect_bursts():
                     "window_seconds": WINDOW_SECONDS,
                     "baseline_rate": round(baseline_rate, 3),
                     "window_rate": round(window_rate, 3),
+                    "severity": severity,
+                    "severity_ratio": round(severity_ratio, 2),
+                    "timestamp": times[end].isoformat(),
                     "reason": f"{window_rate:.2f}/s vs baseline {baseline_rate:.2f}/s"
                 })
                 break

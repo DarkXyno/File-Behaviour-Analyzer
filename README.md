@@ -1,85 +1,106 @@
-````md
-
-# For usage check the bottom of the README.md
-
 # Filesystem Behavior Analyzer
 
-A user-space, event-driven filesystem monitoring and analysis tool built in Python.
+A user-space, event-driven filesystem monitoring and behavior analysis tool built in Python.
 
-This project observes file and directory activity, persists structured event data locally, and derives behavioral insights such as folder activity patterns and event rates. The focus is on correctness, transparency, and system-level reasoning — not kernel drivers or intrusive techniques.
+This project observes file and directory activity, persists structured event data locally, and derives higher-level behavioral insights such as folder activity patterns, event rates, and baseline-relative bursts.
+
+The focus is on **correctness, transparency, and system-level reasoning** — not kernel drivers, intrusive hooks, or black-box detection.
+
+---
+
+## What This Is (and Is Not)
+
+**This is:**
+- A behavioral analysis tool for filesystem activity
+- Event-driven (OS notifications), not polling-based
+- Persistent-first: data is stored and analyzed after the fact
+- Explainable: every insight is derived from visible rules
+
+**This is NOT:**
+- A kernel driver
+- Malware / spyware
+- A real-time antivirus replacement
+- A black-box ML system (yet)
 
 ---
 
 ## Current Features
 
-- Event-driven filesystem monitoring (recursive)
-- Persistent event logging using SQLite
-- Best-effort process attribution (user-space)
+### Observation
+- Recursive filesystem monitoring (user-space)
+- Event-driven capture using OS notifications
+- Structured logging to SQLite
+- Normalized semantic actions (create / modify / delete / rename)
+
+### Analysis
 - Folder-level activity summaries
 - Per-minute event rate aggregation
-- Separate observe and analyze modes
-- Baseline-Relative Burst Detection
+- Baseline-relative burst detection
+- Action-aware burst classification (delete storms, rename spikes, etc.)
+- Separate **observe** and **analyze** modes
+
+### Visualization
+- Interactive Streamlit dashboard
+- Activity timeline
+- Action distribution
+- Folder activity heatmap
+- Burst markers aligned to activity timeline
+- Local-time display with time-range filtering
 
 ---
 
-## Explanations [Placeholder]
+## Core Concepts
+
+### Normalized Events
+
+Raw filesystem signals are normalized into semantic actions such as:
+
+- `file_created`
+- `file_modified`
+- `file_deleted`
+- `file_renamed`
+- `file_created_and_deleted`
+
+This removes OS-level noise and enables meaningful behavioral analysis.
+
+---
 
 ### Baseline-Relative Burst Detection
 
-The analyzer detects abnormal filesystem behavior by comparing short-term activity
-against a learned historical baseline.
+Instead of using fixed thresholds, bursts are detected by comparing **recent activity**
+against a learned **historical baseline** for the same folder and action type.
+
+A burst is flagged when:
+- A minimum number of events occur within a short window, **and**
+- The short-term rate significantly exceeds the historical baseline
+
+This approach reduces false positives and adapts naturally to different usage patterns.
 
 Examples:
 - Sudden mass file deletion
 - Rapid file creation storms
-- Unusual rename bursts
-
-Bursts are detected when recent activity exceeds historical behavior
-by a configurable multiplier, reducing false positives and noise.
-
----
-
-## Random Info
-
-Raw filesystem events are normalized into semantic actions
-(e.g., file_created, file_deleted) before analysis.
-
-Burst detection operates on normalized events, not raw OS signals,
-ensuring accurate, human-meaningful behavior detection.
+- Abnormal rename activity
 
 ---
 
 ## Design Principles
 
-- **User-space only** (no kernel drivers, no admin-only hacks)
-- **Event-driven**, not polling-based
-- **Persistent data first**, intelligence later
-- **Explainable behavior**, not black-box detection
-- Clean separation between observation and analysis
+- **User-space only**  
+  No kernel drivers, no admin-only hacks.
+
+- **Event-driven**  
+  Relies on OS notifications, not periodic polling.
+
+- **Persistent data first**  
+  All intelligence is derived from stored data, not ephemeral state.
+
+- **Explainable behavior**  
+  Every alert can be traced back to raw events and rules.
+
+- **Separation of concerns**  
+  Observation, analysis, and visualization are cleanly separated.
 
 ---
 
-## Usage
-
-### Observe filesystem activity
-Monitor a directory for a fixed duration and store events locally:
-```bash
-python src/main.py --path C:\Path\To\Monitor --duration 60
-````
-
-### Analyze previously collected data
-
-Run analysis on stored events without observing:
-
-```bash
-python src/main.py --analyze
-```
-
-### Observe and analyze in one run
-
-Collect events and immediately analyze them after observation:
-
-```bash
-python src/main.py --path C:\Path\To\Monitor --duration 60 --analyze
-```
+## Project Structure (Simplified)
 

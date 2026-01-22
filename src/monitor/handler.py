@@ -1,16 +1,16 @@
 import sqlite3
 from pathlib import Path
+from datetime import datetime, timezone
+from storage.db import get_db_path
 
-DB_PATH = Path("data/events.db")
-
-class DBLogger:
+class EventLogger:
     def __init__(self):
         self.conn = None
         self._ensure_connection()
 
     def _ensure_connection(self):
         if self.conn is None:
-            self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+            self.conn = sqlite3.connect(get_db_path(), check_same_thread=False)
             self._init_table()
 
     def _init_table(self):
@@ -27,16 +27,19 @@ class DBLogger:
         self.conn.commit()
 
     def log_event(self, event_type, path, is_directory):
-        self._ensure_connection()  # <-- THIS is the key fix
+        ts = datetime.now(timezone.utc).isoformat()
 
-        cursor = self.conn.cursor()
-        cursor.execute("""
+        try:
+            conn = sqlite3.connect(get_db_path())
+            cursor = conn.cursor()
+
+            cursor.execute("""
             INSERT INTO events (timestamp, event_type, path, is_directory)
-            VALUES (strftime('%Y-%m-%d %H:%M:%S', 'now'), ?, ?, ?)
-        """, (event_type, path, int(is_directory)))
-        self.conn.commit()
+            VALUES (?, ?, ?, ?)
+            """, (ts, event_type, path, int(is_directory)))
 
-    def close(self):
-        if self.conn:
-            self.conn.close()
-            self.conn = None
+            conn.commit()
+            conn.close()
+        
+        except Exception as e:
+            print(f"[DB ERROR] {e}")

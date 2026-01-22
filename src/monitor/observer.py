@@ -1,6 +1,6 @@
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from monitor.handler import DBLogger
+from monitor.handler import EventLogger
 import time
 
 class FSHandler(FileSystemEventHandler):
@@ -25,19 +25,18 @@ class FSHandler(FileSystemEventHandler):
 
 def start_observer(path, duration):
 
-    logger = DBLogger()
+    logger = EventLogger()
     handler = FSHandler(logger)
 
     observer = Observer()
     observer.schedule(handler, path, recursive=True)
     observer.start()
 
-    print(f"[+] Monitoring Started on {path}")
+    print(f"[+] Monitoring Started on {path} for {duration}s")
 
     try:
         time.sleep(duration)
     finally:
         observer.stop()
         observer.join()
-        logger.close()
         print("[+] Monitoring stopped.")

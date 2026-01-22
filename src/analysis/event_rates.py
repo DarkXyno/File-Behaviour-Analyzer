@@ -1,17 +1,17 @@
 import sqlite3
 from pathlib import Path
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from storage.db import get_db_path
 
-DB_PATH = Path("data/events.db")
 
 def event_rates(minutes_back=5):
     """
     Returns per-minute event counts for the last N minutes.
     """
-    cutoff = datetime.utcnow() - timedelta(minutes=minutes_back)
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes_back)
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
 
@@ -30,6 +30,8 @@ def event_rates(minutes_back=5):
         ts, path = row[0], row[1]
         # is_directory = row[2]  # Not used in current implementation
         ts_dt = datetime.fromisoformat(ts)
+        if ts_dt.tzinfo is None:
+            ts_dt = ts_dt.replace(tzinfo=timezone.utc)
         if ts_dt < cutoff:
             continue
 

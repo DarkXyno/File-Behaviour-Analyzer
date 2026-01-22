@@ -1,11 +1,10 @@
 import sqlite3
 from pathlib import Path
 from collections import defaultdict
-
-DB_PATH = Path("data\events.db")
+from storage.db import get_db_path
 
 def folder_summary(limit=10):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     cursor.execute("""

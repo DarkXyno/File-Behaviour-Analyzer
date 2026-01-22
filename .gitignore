@@ -11,7 +11,10 @@ __pycache__/
 *.pyd
 
 #events
-data/events.db
+data/
 
 #src
 src/monitor/__pycache__
+
+#random_scripts
+tools/

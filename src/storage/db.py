@@ -1,9 +1,11 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path("data/events.db")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DB_PATH = PROJECT_ROOT / "data" / "events.db"
+
+def get_db_path():
+    return DB_PATH
 
 def get_connection():
-    DB_PATH.parent.mkdir(exist_ok=True)
-    print(f"[DB] Using database at {DB_PATH.resolve()}")
-    return sqlite3.connect(DB_PATH, timeout=5)
+    return sqlite3.connect(DB_PATH)

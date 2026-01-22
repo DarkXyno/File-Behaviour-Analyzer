@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 #temp
 import sqlite3
 from pathlib import Path
+from storage.db import get_db_path
 
 LOCAL_TZ = ZoneInfo("Asia/Kolkata")
 
@@ -55,7 +56,7 @@ def run():
             print(f"Reason: {b['reason']}")
             print()
 
-    conn = sqlite3.connect(Path("data/events.db"))
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     print("\nNormalized events: \n")

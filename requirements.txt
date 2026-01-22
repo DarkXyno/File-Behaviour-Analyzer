@@ -1,3 +1,5 @@
 watchdog
 psutil
 tzdata
+streamlit
+streamlit_autorefresh
