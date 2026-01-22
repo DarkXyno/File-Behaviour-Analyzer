@@ -17,4 +17,4 @@ data/
 src/monitor/__pycache__
 
 #random_scripts
-tools/
+src/generate_scripts
