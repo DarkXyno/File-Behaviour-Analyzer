@@ -99,17 +99,3 @@ Examples:
 
 - **Separation of concerns**  
   Observation, analysis, and visualization are cleanly separated.
-
----
-
-## Project Structure (Simplified)
-
-FileSys/
-├── src/
-│ ├── monitor/ # Filesystem observation
-│ ├── analysis/ # Aggregation, rates, burst detection
-│ ├── storage/ # Database access & schema
-│ ├── visualize/ # Streamlit dashboard
-│ └── main.py # CLI entry point
-├── data/
-│ └── events.db # Persistent event storage
